@@ -1,0 +1,41 @@
+openai:
+  api_key: <API KEY>
+
+microservices:
+  backlog:
+    hostname: 127.0.0.1
+    port: 8001
+  code_base:
+    hostname: 127.0.0.1
+    port: 8002
+  program_management:
+    hostname: 127.0.0.1
+    port: 8003
+  product_owner:
+    hostname: 127.0.0.1
+    port: 8004
+  developer:
+    hostname: 127.0.0.1
+    port: 8005
+  daily_standup:
+    hostname: 127.0.0.1
+    port: 8006
+  sprint_planning:
+    hostname: 127.0.0.1
+    port: 8007
+
+program_management:
+  items_per_sprint: 2
+
+logging:
+  level: DEBUG
+  format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  file_path: './sprintswarm/logs/sprintswarm.log'
+
+pinecone:
+  api_key: <API KEY>
+  backlog_namespace: 'backlog'
+  sprint_backlog_namespace: 'sprint_backlog'
+
+git:
+  repo_path: '/Users/charlesdowdell/sandbox'
