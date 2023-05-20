@@ -3,7 +3,7 @@ from typing import List
 import logging
 from shared_utils.logging_config import setup_logging
 from shared_utils.models import BacklogItem
-from shared_utils.nlp import generate_completion, generate_embedding
+from shared_utils.nlp import generate_chat_completion, generate_embedding
 from shared_utils.configurations import configurations
 from shared_utils.backlog import BacklogWithEmbedding
 import json
@@ -32,10 +32,10 @@ async def sprint_planning():
     backlog_items = json.loads(response.text)["backlog_items"]
     logger.debug('Backlog items')
     logger.debug(backlog_items)
+
     # Decompose backlog items using the NLP completion function
     for item in backlog_items:
-        prompt = f"""You are an AI member of an agile software development team.  
-        You are the team member responsible for sprint planning. 
+        prompt = f"""You are the team member responsible for sprint planning. 
         You are an expert at considering the perspectives of your AI development team. 
         Your current task is to decompose a backlog item for a sprint. The backlog item is:
         '{item['item']['description']}'
@@ -43,8 +43,14 @@ async def sprint_planning():
         The tasks should be as fine-grained as possible and only include code implementation tasks.
         The AI developers these will be assigned to can only create, update, and remove python code.
         Respond with a new line delimited list of tasks and do not include any additional explanation."""
-        completions = generate_completion(prompt, max_tokens=2000)
-        tasks = completions[0].split('\n')
+
+        messages = [
+            {"role": "system", "content": "You are an AI member of an agile software development team."},
+            {"role": "user", "content": prompt}
+        ]
+
+        completions = generate_chat_completion(messages, max_tokens=2000)
+        tasks = completions.split('\n')
 
         # Store the decomposed tasks in the sprint backlog
         for i, task in enumerate(tasks):

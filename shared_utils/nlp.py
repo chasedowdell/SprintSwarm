@@ -25,6 +25,26 @@ def generate_completion(prompt, max_tokens=50, temperature=0.8):
     return completions
 
 
+def generate_chat_completion(messages, model="gpt-3.5-turbo", max_tokens=50, temperature=0.8):
+    """
+    Generates completion(s) for a given chat conversation using GPT-3 or GPT-4.
+
+    :param messages: The list of message objects for the chat conversation.
+    :param model: The model to use for the chat conversation.
+    :param max_tokens: The maximum number of tokens in the generated output.
+    :param temperature: The creativity parameter (higher values result in more creative outputs).
+    :return: The assistant's reply as a string.
+    """
+    response = openai.ChatCompletion.create(
+        model=model,
+        messages=messages,
+        max_tokens=max_tokens,
+        temperature=temperature
+    )
+    # Return the reply
+    return response['choices'][0]['message']['content']
+
+
 def generate_embedding(text):
     model_name = "text-embedding-ada-002"
 

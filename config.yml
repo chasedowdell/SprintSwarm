@@ -1,5 +1,5 @@
 openai:
-  api_key: <API KEY>
+  api_key: KEY
 
 microservices:
   backlog:
@@ -26,6 +26,7 @@ microservices:
 
 program_management:
   items_per_sprint: 2
+  tasks_per_backlog_item: 5
 
 logging:
   level: DEBUG
@@ -33,7 +34,7 @@ logging:
   file_path: './sprintswarm/logs/sprintswarm.log'
 
 pinecone:
-  api_key: <API KEY>
+  api_key: KEY
   backlog_namespace: 'backlog'
   sprint_backlog_namespace: 'sprint_backlog'
 

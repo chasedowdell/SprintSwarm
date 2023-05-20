@@ -5,7 +5,7 @@ import requests
 import json
 from shared_utils.logging_config import setup_logging
 from shared_utils.configurations import configurations
-from shared_utils.nlp import generate_completion, generate_embedding, sanitize_ai_response
+from shared_utils.nlp import generate_chat_completion, generate_embedding, sanitize_ai_response
 from shared_utils.models import ProductVision, BacklogItem
 import uvicorn
 
@@ -31,19 +31,24 @@ async def receive_product_vision(vision: ProductVision):
 
     # Format a prompt for the NLP module
     prompt = f"""
-    You are an exceptionally talented agile product owner tasked with creating the initial product backlog for a team of'
-    AI developers. The customer has given a project with the title '{vision.title}' 
-    and the description '{vision.description}', 
-    the main goals are {goals}, 
+    Your current task is to create the initial product backlog for a team of AI developers. 
+    The customer has given a project with the title '{vision.title}' 
+    and the description '{vision.description}.'  
+    The main goals are {goals}, 
     the key features are {key_features}, 
     and the constraints are {constraints}. 
-    Please generate a list of backlog items to achieve these goals while considering the constraints.
-    The backlog should only include items that an LLM could perform without supervision.
-    Please provide the backlog as a newline delimited list in priority order without numbering or bullets.  
-    Do not include any additional explanation."""
+    Please generate a list of backlog items to achieve these goals while considering the constraints. 
+    The backlog should only include items that an LLM can code without supervision. 
+    Please provide the initial backlog only as a python list: ['item 1', 'item 2', ...]"""
+
+    messages = [
+        {"role": "system", "content": "You are an exceptionally talented agile product owner."},
+        {"role": "user", "content": prompt}
+    ]
 
     # Send the prompt to the get_completions function and get the response
-    completions = generate_completion(prompt, max_tokens=1000)[0].split('\n')
+    completions = eval(generate_chat_completion(messages, model='gpt-4', max_tokens=1000))
+
     logger.debug('Initial backlog items')
     logger.debug('\n'.join(completions))
 
@@ -54,6 +59,11 @@ async def receive_product_vision(vision: ProductVision):
         response = requests.post(backlog_address + '/add_item',
                                  data=data,
                                  headers={'Content-Type': 'application/json'})
+
+    response = requests.post(program_management_address + '/create_project',
+                             data=json.dumps(vision.__dict__),
+                             headers={'Content-Type': 'application/json'})
+
     logger.debug('Starting sprint')
     response = requests.post(program_management_address + '/start_sprint',
                              data=json.dumps(vision.__dict__),

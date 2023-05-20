@@ -3,7 +3,7 @@ import logging
 from shared_utils.logging_config import setup_logging
 from shared_utils.models import ProductVision, ProjectStructure
 from shared_utils.configurations import configurations
-from shared_utils.nlp import generate_completion, extract_json_string
+from shared_utils.nlp import generate_chat_completion, extract_json_string
 from shared_utils.context import Context
 import requests
 import uvicorn
@@ -51,17 +51,18 @@ async def generate_project_structure(vision: ProductVision) -> ProjectStructure:
     # Replace the following example with the actual implementation
     # Format a prompt for the NLP module
     prompt = f"""
-    You are the software architecture expert on an Agile development team.
-    The project description is: 
+    The product owner has provided you with the following project information.\n
+    The project description is:\n
     {vision.description} 
-    The key features are:
+    The key features are:\n
     {vision.key_features}
-    And the constraints are:
+    And the constraints are:\n
+    Must by implemented using python.\n
     {vision.constraints}
     Your task is to create an initial project structure that supports this vision.
     Please briefly summarize the architecture paradigm, project philosophy, 
     and initialize the project structure using only the following JSON structure and 
-    no additional commentary or explanation:
+    no additional commentary or explanation:\n
     {{
         "architecture_paradigm": <software architecture approach being used>
         "project_philosophy": "<philosophy summary>",
@@ -74,8 +75,13 @@ async def generate_project_structure(vision: ProductVision) -> ProjectStructure:
             # More files ...
         ]
     }}"""
-    project_structure_response = generate_completion(prompt, max_tokens=2049)[0]
 
+    messages = [
+        {"role": "system", "content": "You are the software architecture expert on an Agile development team."},
+        {"role": "user", "content": prompt}
+    ]
+
+    project_structure_response = generate_chat_completion(messages, max_tokens=2049)
     project_structure_string = extract_json_string(project_structure_response)
 
     logger.debug(project_structure_string)
@@ -117,7 +123,7 @@ async def create_project(vision: ProductVision):
 @app.post("/start_sprint")
 async def start_sprint(vision: ProductVision):
     # TODO figure out where the create project belongs
-    await create_project(vision)
+    # await create_project(vision)
     for address, endpoint in agents:
         response = requests.post(f"{address}{endpoint}")
         if response.status_code != 200:
